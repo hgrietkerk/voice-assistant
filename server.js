@@ -45,7 +45,7 @@ app.post('/api/call', async (req, res) => {
         From: TELNYX_FROM,
         To: to,
         AIAssistantId: assistantId,
-        DynamicVariables: {
+        AIAssistantDynamicVariables: {
           naam: naam || 'onbekend',
           context: context || 'Geen specifieke context.',
         },
