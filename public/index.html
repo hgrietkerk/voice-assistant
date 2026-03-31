@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Assistant - Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    header {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 {
+      font-size: 20px;
+      color: #f1f5f9;
+    }
+    header .status {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .container { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .card h2 {
+      font-size: 16px;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .full-width { grid-column: 1 / -1; }
+
+    /* Form */
+    label {
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      margin-top: 12px;
+    }
+    label:first-of-type { margin-top: 0; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #e2e8f0;
+      font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+    textarea { resize: vertical; min-height: 60px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.2s;
+    }
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-primary:disabled {
+      background: #334155;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #334155;
+      color: #e2e8f0;
+    }
+    .btn-secondary:hover { background: #475569; }
+
+    /* Call log */
+    .call-list { list-style: none; }
+    .call-item {
+      padding: 12px;
+      border-bottom: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .call-item:last-child { border-bottom: none; }
+    .call-info .call-to {
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+    .call-info .call-meta {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+    .call-status {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .status-queued { background: #fbbf2420; color: #fbbf24; }
+    .status-completed { background: #22c55e20; color: #22c55e; }
+    .status-failed { background: #ef444420; color: #ef4444; }
+    .empty {
+      color: #475569;
+      font-size: 14px;
+      text-align: center;
+      padding: 24px;
+    }
+
+    /* Agenda */
+    .agenda-header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .agenda-header input[type="date"] { width: auto; flex: 1; }
+    .agenda-event {
+      padding: 10px 12px;
+      background: #0f172a;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid #3b82f6;
+    }
+    .agenda-event .event-title { font-weight: 600; font-size: 14px; }
+    .agenda-event .event-time { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+    .toast-success { background: #22c55e; color: white; }
+    .toast-error { background: #ef4444; color: white; }
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Voice Assistant</h1>
+    <span class="status">Hans Guido Rietkerk - Capaciteitsadvies</span>
+  </header>
+
+  <div class="container">
+    <!-- Nieuwe call starten -->
+    <div class="card">
+      <h2>Nieuwe call</h2>
+      <label for="callTo">Telefoonnummer</label>
+      <input type="tel" id="callTo" placeholder="+31612345678">
+
+      <label for="callNaam">Naam</label>
+      <input type="text" id="callNaam" placeholder="Naam van de persoon">
+
+      <label for="callType">Assistent</label>
+      <select id="callType">
+        <option value="general">Algemeen</option>
+        <option value="scheduler">Afspraken Planner</option>
+      </select>
+
+      <label for="callContext">Context (optioneel)</label>
+      <textarea id="callContext" placeholder="Extra informatie voor de assistent..."></textarea>
+
+      <button class="btn btn-primary" id="btnCall" onclick="startCall()">
+        Bellen
+      </button>
+    </div>
+
+    <!-- Agenda -->
+    <div class="card">
+      <h2>Agenda</h2>
+      <div class="agenda-header">
+        <input type="date" id="agendaDatum">
+        <button class="btn btn-secondary" onclick="loadAgenda()">Laden</button>
+      </div>
+      <div id="agendaList">
+        <div class="empty">Selecteer een datum om de agenda te bekijken</div>
+      </div>
+    </div>
+
+    <!-- Call log -->
+    <div class="card full-width">
+      <h2>Recente calls</h2>
+      <ul class="call-list" id="callList">
+        <li class="empty">Nog geen calls gestart</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Set vandaag als default datum
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('agendaDatum').value = today;
+
+    async function startCall() {
+      const to = document.getElementById('callTo').value.trim();
+      const naam = document.getElementById('callNaam').value.trim();
+      const assistantType = document.getElementById('callType').value;
+      const context = document.getElementById('callContext').value.trim();
+
+      if (!to) {
+        showToast('Vul een telefoonnummer in', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('btnCall');
+      btn.disabled = true;
+      btn.textContent = 'Bezig...';
+
+      try {
+        const res = await fetch('/api/call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to, naam, assistantType, context }),
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          showToast(`Call gestart naar ${to}`, 'success');
+          document.getElementById('callTo').value = '';
+          document.getElementById('callNaam').value = '';
+          document.getElementById('callContext').value = '';
+          loadCalls();
+        } else {
+          showToast(`Fout: ${data.error}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Fout: ${err.message}`, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Bellen';
+      }
+    }
+
+    async function loadCalls() {
+      try {
+        const res = await fetch('/api/calls');
+        const calls = await res.json();
+        const list = document.getElementById('callList');
+
+        if (calls.length === 0) {
+          list.innerHTML = '<li class="empty">Nog geen calls gestart</li>';
+          return;
+        }
+
+        list.innerHTML = calls.map(c => `
+          <li class="call-item">
+            <div class="call-info">
+              <div class="call-to">${c.naam || c.to}</div>
+              <div class="call-meta">
+                ${c.to} &middot; ${c.assistantType === 'scheduler' ? 'Planner' : 'Algemeen'}
+                &middot; ${new Date(c.startedAt).toLocaleTimeString('nl-NL')}
+              </div>
+            </div>
+            <span class="call-status status-${c.status}">${c.status}</span>
+          </li>
+        `).join('');
+      } catch (err) {
+        console.error('Load calls error:', err);
+      }
+    }
+
+    async function loadAgenda() {
+      const datum = document.getElementById('agendaDatum').value;
+      const container = document.getElementById('agendaList');
+
+      if (!datum) {
+        showToast('Selecteer een datum', 'error');
+        return;
+      }
+
+      container.innerHTML = '<div class="empty">Laden...</div>';
+
+      try {
+        const res = await fetch(`/api/agenda/${datum}`);
+        const events = await res.json();
+
+        if (events.length === 0) {
+          container.innerHTML = '<div class="empty">Geen afspraken op deze dag</div>';
+          return;
+        }
+
+        container.innerHTML = events.map(e => {
+          const start = e.start.dateTime
+            ? new Date(e.start.dateTime).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+            : 'Hele dag';
+          const end = e.end.dateTime
+            ? new Date(e.end.dateTime).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+            : '';
+          return `
+            <div class="agenda-event">
+              <div class="event-title">${e.summary || 'Geen titel'}</div>
+              <div class="event-time">${start}${end ? ' - ' + end : ''}</div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="empty">Fout: ${err.message}</div>`;
+      }
+    }
+
+    function showToast(msg, type) {
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Auto-refresh calls elke 10 seconden
+    loadCalls();
+    setInterval(loadCalls, 10000);
+  </script>
+</body>
+</html>
