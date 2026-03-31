@@ -56,7 +56,18 @@ app.post('/api/call', async (req, res) => {
     console.log('Telnyx API response:', JSON.stringify(data));
 
     if (!response.ok) {
-      return res.status(response.status).json({ ok: false, error: data.errors?.[0]?.detail || data.message || JSON.stringify(data) });
+      const errorMsg = data.errors?.[0]?.detail || data.message || JSON.stringify(data);
+      callLog.unshift({
+        id: null,
+        to,
+        assistantType,
+        naam,
+        context,
+        status: 'failed',
+        startedAt: new Date().toISOString(),
+        error: errorMsg,
+      });
+      return res.status(response.status).json({ ok: false, error: errorMsg });
     }
 
     const logEntry = {

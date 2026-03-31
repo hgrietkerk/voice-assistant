@@ -292,6 +292,7 @@
               <div class="call-meta">
                 ${c.to} &middot; ${c.assistantType === 'scheduler' ? 'Planner' : 'Algemeen'}
                 &middot; ${new Date(c.startedAt).toLocaleTimeString('nl-NL')}
+                ${c.error ? '<br>' + c.error : ''}
               </div>
             </div>
             <span class="call-status status-${c.status}">${c.status}</span>
