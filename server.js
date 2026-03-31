@@ -53,6 +53,12 @@ app.post('/api/call', async (req, res) => {
     });
 
     const data = await response.json();
+    console.log('Telnyx API response:', JSON.stringify(data));
+
+    if (!response.ok) {
+      return res.status(response.status).json({ ok: false, error: data.errors?.[0]?.detail || data.message || JSON.stringify(data) });
+    }
+
     const logEntry = {
       id: data.call_sid,
       to,
