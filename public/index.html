@@ -315,7 +315,14 @@
 
       try {
         const res = await fetch(`/api/agenda/${datum}`);
-        const events = await res.json();
+        const data = await res.json();
+
+        if (data.error) {
+          container.innerHTML = `<div class="empty">Fout: ${data.error}</div>`;
+          return;
+        }
+
+        const events = Array.isArray(data) ? data : [];
 
         if (events.length === 0) {
           container.innerHTML = '<div class="empty">Geen afspraken op deze dag</div>';
