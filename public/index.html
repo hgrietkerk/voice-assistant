@@ -292,7 +292,7 @@
         list.innerHTML = calls.map(c => `
           <li class="call-item">
             <div class="call-info">
-              <div class="call-to">${c.naam || c.to}</div>
+              <div class="call-to">Gebeld: ${c.naam || c.to}${c.manager ? ' &middot; Namens: ' + c.manager : ''}</div>
               <div class="call-meta">
                 ${c.to} &middot; ${c.assistantType === 'scheduler' ? 'Planner' : 'Algemeen'}
                 &middot; ${new Date(c.startedAt).toLocaleTimeString('nl-NL')}
