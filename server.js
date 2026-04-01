@@ -49,6 +49,8 @@ app.post('/api/call', async (req, res) => {
           naam: naam || 'onbekend',
           context: context || 'Geen specifieke context.',
         },
+        StatusCallback: `https://voice-assistant-production-3c25.up.railway.app/webhook/telnyx`,
+        StatusCallbackEvent: 'initiated ringing answered completed',
       }),
     });
 
@@ -183,13 +185,36 @@ app.get('/api/agenda/:datum', async (req, res) => {
 
 // --- Telnyx webhook (call events, transcripts) ---
 app.post('/webhook/telnyx', (req, res) => {
-  console.log('Telnyx webhook:', JSON.stringify(req.body).substring(0, 500));
-  const data = req.body?.data;
-  if (data?.event_type === 'call.hangup') {
-    const callSid = data?.payload?.call_control_id;
+  console.log('Telnyx webhook:', JSON.stringify(req.body).substring(0, 1000));
+
+  // TeXML events komen als form-encoded of JSON met CallSid/CallStatus
+  const callSid = req.body?.CallSid || req.body?.data?.payload?.call_control_id || req.body?.data?.payload?.call_sid;
+  const callStatus = req.body?.CallStatus || req.body?.data?.event_type;
+
+  if (callSid) {
     const entry = callLog.find(c => c.id === callSid);
-    if (entry) entry.status = 'completed';
+    if (entry) {
+      if (callStatus === 'completed' || callStatus === 'call.hangup') {
+        entry.status = 'completed';
+      } else if (callStatus === 'in-progress' || callStatus === 'call.answered') {
+        entry.status = 'in-progress';
+      } else if (callStatus === 'busy' || callStatus === 'no-answer' || callStatus === 'failed') {
+        entry.status = 'failed';
+      }
+    }
   }
+
+  // Match op telefoonnummer als fallback (voor TeXML status callbacks)
+  const to = req.body?.To || req.body?.Called;
+  if (!callSid && to && callStatus) {
+    const entry = callLog.find(c => c.to === to && c.status === 'queued');
+    if (entry) {
+      if (callStatus === 'completed') entry.status = 'completed';
+      else if (callStatus === 'in-progress') entry.status = 'in-progress';
+      else if (callStatus === 'busy' || callStatus === 'no-answer' || callStatus === 'failed') entry.status = 'failed';
+    }
+  }
+
   res.json({ ok: true });
 });
 
