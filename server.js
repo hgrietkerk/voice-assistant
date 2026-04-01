@@ -31,7 +31,7 @@ const callLog = [];
 
 // --- API: Start a call ---
 app.post('/api/call', async (req, res) => {
-  const { to, assistantType, naam, context } = req.body;
+  const { to, assistantType, naam, manager, context } = req.body;
   const assistantId = assistantType === 'scheduler' ? ASSISTANT_SCHEDULER : ASSISTANT_GENERAL;
 
   try {
@@ -47,6 +47,7 @@ app.post('/api/call', async (req, res) => {
         AIAssistantId: assistantId,
         AIAssistantDynamicVariables: {
           naam: naam || 'onbekend',
+          manager: manager || 'Hans Guido',
           context: context || 'Geen specifieke context.',
         },
         StatusCallback: `https://voice-assistant-production-3c25.up.railway.app/webhook/telnyx`,

@@ -194,6 +194,9 @@
       <label for="callNaam">Naam</label>
       <input type="text" id="callNaam" placeholder="Naam van de persoon">
 
+      <label for="callManager">Manager</label>
+      <input type="text" id="callManager" placeholder="Naam van de manager" value="Hans Guido">
+
       <label for="callType">Assistent</label>
       <select id="callType">
         <option value="general">Algemeen</option>
@@ -238,6 +241,7 @@
       const to = document.getElementById('callTo').value.trim();
       const naam = document.getElementById('callNaam').value.trim();
       const assistantType = document.getElementById('callType').value;
+      const manager = document.getElementById('callManager').value.trim();
       const context = document.getElementById('callContext').value.trim();
 
       if (!to) {
@@ -253,7 +257,7 @@
         const res = await fetch('/api/call', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ to, naam, assistantType, context }),
+          body: JSON.stringify({ to, naam, manager, assistantType, context }),
         });
         const data = await res.json();
 
