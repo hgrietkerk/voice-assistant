@@ -201,6 +201,7 @@
       <select id="callType">
         <option value="general">Algemeen</option>
         <option value="scheduler">Afspraken Planner</option>
+        <option value="marketing">Marketing Survey</option>
       </select>
 
       <label for="callContext">Waar gaat het gesprek over, wat wil je bereiken</label>
@@ -294,7 +295,7 @@
             <div class="call-info">
               <div class="call-to">Gebeld: ${c.naam || c.to}${c.manager ? ' &middot; Namens: ' + c.manager : ''}</div>
               <div class="call-meta">
-                ${c.to} &middot; ${c.assistantType === 'scheduler' ? 'Planner' : 'Algemeen'}
+                ${c.to} &middot; ${{scheduler: 'Planner', marketing: 'Marketing'}[c.assistantType] || 'Algemeen'}
                 &middot; ${new Date(c.startedAt).toLocaleTimeString('nl-NL')}
                 ${c.error ? '<br>' + c.error : ''}
               </div>

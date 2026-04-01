@@ -14,6 +14,7 @@ const TELNYX_TEXML_APP_ID = process.env.TELNYX_TEXML_APP_ID;
 const TELNYX_FROM = process.env.TELNYX_FROM_NUMBER;
 const ASSISTANT_GENERAL = process.env.TELNYX_ASSISTANT_GENERAL;
 const ASSISTANT_SCHEDULER = process.env.TELNYX_ASSISTANT_SCHEDULER;
+const ASSISTANT_MARKETING = process.env.TELNYX_ASSISTANT_MARKETING;
 const CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
 
 // --- Google Calendar ---
@@ -32,7 +33,8 @@ const callLog = [];
 // --- API: Start a call ---
 app.post('/api/call', async (req, res) => {
   const { to, assistantType, naam, manager, context } = req.body;
-  const assistantId = assistantType === 'scheduler' ? ASSISTANT_SCHEDULER : ASSISTANT_GENERAL;
+  const assistantIds = { scheduler: ASSISTANT_SCHEDULER, marketing: ASSISTANT_MARKETING };
+  const assistantId = assistantIds[assistantType] || ASSISTANT_GENERAL;
 
   try {
     const response = await fetch(`https://api.telnyx.com/v2/texml/ai_calls/${TELNYX_TEXML_APP_ID}`, {
